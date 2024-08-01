@@ -11,80 +11,78 @@ packageLogFile="/var/log/VenusOS-TemperatureService/current"
 
 #### following lines incorporate SetupHelper utilities into this script
 # Refer to the SetupHelper ReadMe file for details.
-    
+
 # CommonResources sets $okToProceed and $reinstall
-# among other varables and functions useful to this script
+# among other variables and functions useful to this script
 
 source "/data/SetupHelper/CommonResources"
 
 #### end of lines to include SetupHelper
 
-
 #### running manually and OK to proceed - prompt for input
-if [ $scriptAction == 'NONE' ] ; then
-    # display innitial message
-    echo
-    echo "This package brings the RPI's processor internal temperature to the GUI and VRM"
+if [ $scriptAction == 'NONE' ]; then
+	# display innitial message
+	echo
+	echo "This package brings the RPI's processor internal temperature to the GUI and VRM"
 
-    standardActionPrompt
+	standardActionPrompt
 fi
 
 #### install code goes here
-if [ $scriptAction == 'INSTALL' ] ; then
+if [ $scriptAction == 'INSTALL' ]; then
 
-    logMessage "++ Installing VenusOS Temperature Service"
+	logMessage "++ Installing VenusOS Temperature Service"
 
-    installService $packageName
-	
+	installService $packageName
+
 	# install DT overlay to for 1-Wire
-    updateActiveFile "$overlayFile"
-	
+	updateActiveFile "$overlayFile"
+
 	if [ $(grep -c "w1-gpio" "$configFile") == 0 ]; then
-        logMessage "activating 1-Wire overlay"
-        echo "#### Change 1-Wire Temperatursensor GPIO"  >> "$configFile"
+		logMessage "activating 1-Wire overlay"
+		echo "#### Change 1-Wire Temperatursensor GPIO" >> "$configFile"
 		echo "dtoverlay=w1-gpio,gpiopin=26" >> "$configFile"
 		echo "#### end change 1-Wire GPIO" >> "$configFile"
-        filesUpdated=true
-    fi
-	
+		filesUpdated=true
+	fi
+
 fi
 
 #### uninstalling - check scriptAction again
 # if an install step failed package needs to be removed
-if [ $scriptAction == 'UNINSTALL' ] ; then
-    logMessage "++ Uninstalling VenusOS Temperature Service"
+if [ $scriptAction == 'UNINSTALL' ]; then
+	logMessage "++ Uninstalling VenusOS Temperature Service"
 
-    removeService $packageName
-	
+	removeService $packageName
+
 	restoreActiveFile "$overlayFile"
-	
+
 	# remove mods from configFile - do not use restore in case other mods were made manually
-    if [ -f "$configFile" ]; then
-        if [ $(grep -c "#### Change 1-Wire Temperatursensor GPIO" "$configFile") != 0 ]; then
-            sed -i -e '/#### Change 1-Wire Temperatursensor GPIO/,/#### end change 1-Wire GPIO/d' "$configFile"
-            filesUpdated=true
-        fi
-    fi
-    # remove for older Verison
-    if [ -f "$configFile" ]; then
-        if [ $(grep -c "#### Change 1-Wire Temperatursensor on Pin4" "$configFile") != 0 ]; then
-            sed -i -e '/#### Change 1-Wire Temperatursensor on Pin4/,/#### end change 1-Wire Pin4/d' "$configFile"
-            filesUpdated=true
-        fi
-    fi
-    # remove for older Verison
-    if [ -f "$configFile" ]; then
-        if [ $(grep -c "#### Change 1-Wire Temperatursensor on Pin26" "$configFile") != 0 ]; then
-            sed -i -e '/#### Change 1-Wire Temperatursensor on Pin26/,/#### end change 1-Wire Pin26/d' "$configFile"
-            filesUpdated=true
-        fi
-    fi
+	if [ -f "$configFile" ]; then
+		if [ $(grep -c "#### Change 1-Wire Temperatursensor GPIO" "$configFile") != 0 ]; then
+			sed -i -e '/#### Change 1-Wire Temperatursensor GPIO/,/#### end change 1-Wire GPIO/d' "$configFile"
+			filesUpdated=true
+		fi
+	fi
+	# remove for older Verison
+	if [ -f "$configFile" ]; then
+		if [ $(grep -c "#### Change 1-Wire Temperatursensor on Pin4" "$configFile") != 0 ]; then
+			sed -i -e '/#### Change 1-Wire Temperatursensor on Pin4/,/#### end change 1-Wire Pin4/d' "$configFile"
+			filesUpdated=true
+		fi
+	fi
+	# remove for older Verison
+	if [ -f "$configFile" ]; then
+		if [ $(grep -c "#### Change 1-Wire Temperatursensor on Pin26" "$configFile") != 0 ]; then
+			sed -i -e '/#### Change 1-Wire Temperatursensor on Pin26/,/#### end change 1-Wire Pin26/d' "$configFile"
+			filesUpdated=true
+		fi
+	fi
 fi
 
-if $filesUpdated ; then
-    rebootNeeded=true
+if $filesUpdated; then
+	rebootNeeded=true
 fi
-
 
 # thats all folks - SCRIPT EXITS INSIDE THE FUNCTION
 endScript

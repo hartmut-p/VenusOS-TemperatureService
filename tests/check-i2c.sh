@@ -2,6 +2,6 @@
 
 if ! pgrep -f "dbus-i2c.py" >/dev/null; then
     echo "process not found"
-  else
+else
     echo "process running"
-  fi
+fi
